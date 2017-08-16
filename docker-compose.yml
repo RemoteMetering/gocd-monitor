@@ -1,5 +1,6 @@
 go-build-monitor:
   build: .
+  restart: always
   ports:
-   - "3000:3000"
-  command: npm start
+   - "3030:3000"
+  # command: npm start
