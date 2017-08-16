@@ -6,7 +6,7 @@ var config = {
     // Webpack dev port to run on
     devPort: 3001,
     // Url for your go server
-    goServerUrl: 'https://ci.example.com',
+    goServerUrl: 'http://192.168.0.176:8153',
     // Go user to use for communication with go server
     goUser: 'xxx',
     // Password for go user
