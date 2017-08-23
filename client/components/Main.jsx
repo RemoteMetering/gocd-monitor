@@ -225,16 +225,6 @@ export default class Main extends React.Component {
         }
         else
           return 1;
-        // switch(aStatus) {
-        //   case 'building':
-        //     return -1;
-        //   case 'failed':
-        //     return bStatus === 'building' ? 1 : -1;
-        //   case 'passed':
-        //     return bStatus === 'building' || bStatus === 'failed' ? 1 : -1;
-        //   default:
-        //     return bStatus !== 'paused' ? 1 : -1;
-        // }
       });
     }
   }
