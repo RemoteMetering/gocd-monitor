@@ -77,7 +77,6 @@ describe('MainComponent spec', () => {
       const pipelines = generatePipelines();
 
       const sortedPipelineNames = mainComponent.sortPipelines(pipelines, [], 'status').map(p => p.name);
- console.log("sortedPipelineNames ", sortedPipelineNames);
       expect(sortedPipelineNames).to.eql(['pipeline3', 'pipeline2', 'pipeline1', 'pipeline4']);
     });
 
