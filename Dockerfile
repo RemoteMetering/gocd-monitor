@@ -1,12 +1,12 @@
-FROM node:boron
+FROM node:6
 
-# Create app directory
-RUN mkdir -p /app
-WORKDIR /app
+WORKDIR /usr/src/app
 
-# Bundle app source
-COPY . /app
+COPY package*.json ./
 
 RUN npm install
-RUN npm run postinstall
+
+COPY . .
+
+EXPOSE 3000
 CMD [ "npm", "start" ]
