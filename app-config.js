@@ -16,7 +16,7 @@ var config = {
     // If > 0 switches between pipeline and test results page every n seconds
     switchBetweenPagesInterval: 0,
     // Whether to display build labels
-    showBuildLabels: false,
+    showBuildLabels: true,
     // Whether to group pipelines
     groupPipelines: false
 }
