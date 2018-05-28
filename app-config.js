@@ -1,23 +1,23 @@
 var config = {
     // Name of built js-file
-    jsFilename : 'app.js',
+    jsFilename: 'app.js',
     // Port to run the application on
-    port: 3000,
+    port: process.env.gocdmonitor_port || 3000,
     // Webpack dev port to run on
     devPort: 3001,
     // Url for your go server
-    goServerUrl: 'http://192.168.0.176:8153',
+    goServerUrl: process.env.gocdmonitor_gocd_host || 'https://ci.example.com',
     // Go user to use for communication with go server
-    goUser: 'rms',
+    goUser: process.env.gocdmonitor_gocd_user || 'xxx',
     // Password for go user
-    goPassword: 'rms',
+    goPassword: process.env.gocdmonitor_gocd_password || 'xxx',
     // How often data from go should be refreshed in seconds
-    goPollingInterval: 30,
+    goPollingInterval: process.env.gocdmonitor_gocd_poll_interval || 30,
     // If > 0 switches between pipeline and test results page every n seconds
-    switchBetweenPagesInterval: 0,
+    switchBetweenPagesInterval: process.env.gocdmonitor_gocd_poll_interval || 0,
     // Whether to display build labels
-    showBuildLabels: true,
+    showBuildLabels: process.env.gocdmonitor_gocd_showbuildlabels === "true" ? true : false,
     // Whether to group pipelines
-    groupPipelines: false
+    groupPipelines: process.env.gocdmonitor_gocd_grouppipelines === "true" ? true : false
 }
 module.exports = config;
