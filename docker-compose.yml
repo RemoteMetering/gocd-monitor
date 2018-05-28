@@ -2,7 +2,7 @@ go-build-monitor:
   build: .
   restart: always
   environment:
-    - gocdmonitor_gocd=http://192.168.0.176:8153
+    - gocdmonitor_gocd_host=http://192.168.0.176:8153
     - gocdmonitor_gocd_user=rms
     - gocdmonitor_gocd_password=rms
     - gocdmonitor_gocd_showbuildlabels=true
