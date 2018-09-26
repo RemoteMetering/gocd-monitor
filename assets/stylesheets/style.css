@@ -95,7 +95,7 @@
 }
 
 body {
-  font: 12px "Roboto", sans-serif;
+  font: 16px "Roboto", sans-serif;
 }
 
 a {
@@ -108,6 +108,10 @@ a {
   color: #fff;
 }
 
+.appcontainer a {
+  font-weight: 400;
+}
+
 /* Build title, pipeline name and status */
 div.groupName {
   color: #9E9E9E;
@@ -117,27 +121,25 @@ div.groupName {
   padding-bottom: 10px;
 }
 /* Build title, pipeline name and status */
-div.buildtitle > div {
+.buildtitle {
   width: 80%;
-}
-div.buildtitle span {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
 }
-
 /* Weather status indicator */
 .buildstatus {
   color: #fff;
   position: absolute;
-  top: 14px;
-  right: 10px;
+  top: 1.5rem;
+  right: 1rem;
 }
 
 /* Info text att card bottom, triggered by etc. */
 div.buildinfo {
   color: #fff;
   display: flex;
+  margin-top: 1rem;
   width: 100%;
 }
 div.buildinfo > div {
@@ -212,11 +214,10 @@ div.buildinfo span {
 
 /* Progress spinner */
 .loader {
-  vertical-align: text-bottom !important;
   margin: 1px 1px 0;
   display: inline-block;
   position: relative;
-  width: 13px;
+  width: 0.75rem;
 }
 .loader:before {
   content: '';
