@@ -17,11 +17,12 @@ export default class GoService {
     this.pipelinesPauseInfo = {};
     this.testResults = [];
     this.currentSettings = {
-      disabledPipelines: []
+      disabledPipelines: conf.defaultDisabledPipelines,
+      sortOrder: conf.defaultSortOrder
     };
     this.pollingInterval = conf.goPollingInterval * 1000;
     // Refresh pipelines once every day
-    this.checkPipelinesInterval = 24 * 60 * 60 * 1000;
+    this.checkPipelinesInterval = conf.goCheckPipelinesInterval * 1000;
     this.buildService = new GoBuildService(this.goConfig);
     this.testService = new GoTestService(this.goConfig);
 
@@ -37,7 +38,7 @@ export default class GoService {
     // Retrieve current settings
     this.dbService.getSettings().then((doc) => {
       if (doc && doc.settings) {
-        this.currentSettings = doc.settings;
+        this.currentSettings = Object.assign(this.currentSettings, doc.settings);
       }
     });
 
@@ -121,17 +122,21 @@ export default class GoService {
         });
     };
     // Refresh pipeline names and poll every day for new
-    if (conf.groupPipelines) {
-      getPipelineGroups();
-    }
-    refreshPipelinesAndPollForUpdates();
-    setInterval(refreshPipelinesAndPollForUpdates, this.checkPipelinesInterval);
+    const fullRefresh = () => {
+      Logger.debug('Performing full refresh');
+      if (conf.groupPipelines) {
+        getPipelineGroups();
+      }
+      refreshPipelinesAndPollForUpdates();
+    };
+    fullRefresh();
+    setInterval(fullRefresh, this.checkPipelinesInterval);
 
   }
 
   /**
    * Adds tests from a pipeline. Retrieves all test report files and saves it to db
-   * 
+   *
    * @param {string} pipeline The pipeline to get the test reports from
    */
   addPipelineTests(pipeline) {
@@ -165,7 +170,7 @@ export default class GoService {
 
   /**
    * Update test results if needed
-   * 
+   *
    * @param {Array<Object>}   pipelines   Pipelines to check for new tests
    */
   updateTestResults(pipelines) {
@@ -190,7 +195,7 @@ export default class GoService {
               if (stage.name === result.stage && stage.status !== 'building') {
                 for (let j = 0; j < stage.jobresults.length; j++) {
                   const job = stage.jobresults[j];
-                  // If scheduled job time is after time of latest test 
+                  // If scheduled job time is after time of latest test
                   if (job.name === result.job && job.scheduled > latestTestTime) {
                     return {
                       testId: result._id,

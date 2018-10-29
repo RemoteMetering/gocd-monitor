@@ -38,10 +38,13 @@ gocdmonitor_gocd_password=xxx
 Optional environment variables:
 ```
 gocdmonitor_gocd_poll_interval=60
+gocdmonitor_gocd_check_pipelines_interval=60
 gocdmonitor_gocd_showbuildlabels=true
 gocdmonitor_gocd_poll_interval=true
 gocdmonitor_gocd_grouppipelines=true
 gocdmonitor_gocd_linktopipelineingo=true
+gocdmonitor_default_sort_order=buildtime
+gocdmonitor_default_hidden_pipelines=foo,bar
 ```
 
 Enabling HTTPS of the server
