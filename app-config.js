@@ -1,6 +1,8 @@
 var config = {
     // Name of built js-file
     jsFilename: 'app.js',
+    // Enable dark theme
+    enableDarkTheme: process.env.gocdmonitor_enable_dark_theme === "true",
     // Port to run the application on
     port: process.env.gocdmonitor_port || 3000,
     // Webpack dev port to run on
@@ -29,6 +31,8 @@ var config = {
     groupPipelines: process.env.gocdmonitor_gocd_grouppipelines === "true",
     // Whether to link to pipeline in GoCD on click
     linkToPipelineInGo: process.env.gocdmonitor_gocd_linktopipelineingo === 'true',
+    // Whether to hide the weather icons
+    hideWeatherIcons: process.env.gocdmonitor_hide_weather_icons === 'true',
     // How to sort pipelines by default (buildtime, status) - can be overridden in the admin UI
     defaultSortOrder: process.env.gocdmonitor_default_sort_order || 'buildtime',
     // Which pipelines to hide - can be overridden in the admin UI

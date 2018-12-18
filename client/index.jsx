@@ -1,20 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
-
 import io from 'socket.io-client';
-
-import { switchBetweenPagesInterval } from '../app-config';
+import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import { grey, purple } from '@material-ui/core/colors';
 import Main from './components/Main';
 import TestResults from './components/TestResults';
-import purple from '@material-ui/core/colors/purple';
-import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 
 // Setup a socket to pass to components that uses it
 const socket = io();
 
 // Switch between pipeline and test results page, don't when in admin mode
 const adminMode = window.location.search.indexOf('admin') >= 0;
+const switchBetweenPagesInterval = process.env.SWITCH_BETWEEN_PAGES_INTERVAL;
 if (switchBetweenPagesInterval && switchBetweenPagesInterval > 0 && !adminMode) {
   setTimeout(() => {
     if (window.location.pathname.indexOf('test-results') >= 0) {
@@ -26,11 +24,21 @@ if (switchBetweenPagesInterval && switchBetweenPagesInterval > 0 && !adminMode) 
 }
 
 // Application theme
+const enableDarkTheme = process.env.ENABLE_DARK_THEME;
 const theme = createMuiTheme({
+  typography: {
+    useNextVariants: true,
+  },
   palette: {
+    type: enableDarkTheme ? 'dark' : 'light',
     primary: purple
   }
 });
+
+if (enableDarkTheme) {
+    document.body.style.background = grey[800];
+}
+
 // Render react router routes
 ReactDOM.render((
   <MuiThemeProvider theme={theme}>
