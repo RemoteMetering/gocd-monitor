@@ -8,4 +8,15 @@ go-build-monitor:
     - gocdmonitor_gocd_showbuildlabels=true
   ports:
    - "3030:3000"
+
+nagios-build-monitor:
+  build: .
+  restart: always
+  environment:
+    - gocdmonitor_gocd_host=http://192.168.0.176:8080
+    - gocdmonitor_gocd_user=nagiosadmin
+    - gocdmonitor_gocd_password=rms@123
+    - gocdmonitor_gocd_showbuildlabels=true
+  ports:
+   - "3033:3000"
   # command: npm start
