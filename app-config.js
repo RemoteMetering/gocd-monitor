@@ -41,5 +41,7 @@ var config = {
     linkToPipelineInGo: process.env.gocdmonitor_gocd_linktopipelineingo === 'true',
     // Whether to hide the weather icons
     hideWeatherIcons: process.env.gocdmonitor_hide_weather_icons === 'true',
+    // Whether to hide the weather icons
+    enableNagios: process.env.gocdmonitor_enable_nagios === 'true',
 }
 module.exports = config;

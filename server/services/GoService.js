@@ -1,6 +1,7 @@
 import * as conf from '../../app-config';
 
 import GoBuildService from './GoBuildService';
+import NagiosBuildService from './NagiosBuildService';
 import GoTestService from './GoTestService';
 import DBService from './DBService';
 import Logger from '../utils/Logger';
@@ -23,7 +24,8 @@ export default class GoService {
     this.pollingInterval = conf.goPollingInterval * 1000;
     // Refresh pipelines once every day
     this.checkPipelinesInterval = conf.goCheckPipelinesInterval * 1000;
-    this.buildService = new GoBuildService(this.goConfig);
+
+    this.buildService = conf.enableNagios ? new NagiosBuildService(this.goConfig) : new GoBuildService(this.goConfig);
     this.testService = new GoTestService(this.goConfig);
 
     // Init db and settings
