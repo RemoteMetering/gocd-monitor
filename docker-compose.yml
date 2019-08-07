@@ -17,6 +17,7 @@ nagios-build-monitor:
     - gocdmonitor_gocd_user=nagiosadmin
     - gocdmonitor_gocd_password=rms@123
     - gocdmonitor_gocd_showbuildlabels=true
+    - gocdmonitor_gocd_enable-nagios=true
   ports:
    - "3033:3000"
   # command: npm start
