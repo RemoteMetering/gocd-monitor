@@ -43,6 +43,7 @@ gocdmonitor_gocd_switch_pages_interval=60
 gocdmonitor_gocd_grouppipelines=true
 gocdmonitor_default_sort_order=buildtime
 gocdmonitor_default_hidden_pipelines=foo,bar
+gocdmonitor_default_pipeline_filter_regex=pipeline.*-[0-9]+
 gocdmonitor_enable_dark_theme=true
 gocdmonitor_gocd_showbuildlabels=true
 gocdmonitor_gocd_linktopipelineingo=true
@@ -94,6 +95,10 @@ Go to `http://localhost:3000?admin` and click the settings button in the bottom-
 * Sort Order - Sort pipelines by status or latest build time
 * Filter Pipelines - Disable/enable pipelines to retrieve from go server. It's also possible to write a regex with the pipelines you want.
 ![Configuration](https://github.com/karmats/gocd-monitor/blob/gh-pages/images/configuration.png?raw=true)
+
+### Using multiple configuration profiles
+
+Add the `profile` attribute to your URL, e.g. `http://localhost:3000?admin&profile=team1`. Then continue to configure as usual.
 
 ## Test reports
 To configure test reports, go to `http://localhost:3000/test-results?admin`. Click the '+'-button and choose the pipeline you want to generate test reports for. The system then retrieves all test files and creates graph and possible error table for all tests found in that pipeline. For now only cucumber tests are supported. If defined, the system will switch between monitor and test report page every `switchBetweenPagesInterval` seconds.

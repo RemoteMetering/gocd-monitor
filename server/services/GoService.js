@@ -6,6 +6,7 @@ import GoTestService from './GoTestService';
 import DBService from './DBService';
 import Logger from '../utils/Logger';
 import CucumberParser from '../utils/CucumberParser';
+import Datastore from 'nedb';
 
 export default class GoService {
 
@@ -17,8 +18,9 @@ export default class GoService {
     this.pipelineNameToGroupName = {};
     this.pipelinesPauseInfo = {};
     this.testResults = [];
-    this.currentSettings = {
+    this.defaultSettings = {
       disabledPipelines: conf.defaultDisabledPipelines,
+      filterRegex: conf.defaultPipelineFilterRegex,
       sortOrder: conf.defaultSortOrder
     };
     this.pollingInterval = conf.goPollingInterval * 1000;
@@ -29,7 +31,7 @@ export default class GoService {
     this.testService = new GoTestService(this.goConfig);
 
     // Init db and settings
-    this.dbService = new DBService(conf.dbFilePath);
+    this.dbService = new DBService(new Datastore({ filename: conf.dbFilePath, autoload: true }));
 
   }
 
@@ -37,13 +39,6 @@ export default class GoService {
    * Starts the service. Polls go server for pipeline and test results
    */
   start() {
-    // Retrieve current settings
-    this.dbService.getSettings().then((doc) => {
-      if (doc && doc.settings) {
-        this.currentSettings = Object.assign(this.currentSettings, doc.settings);
-      }
-    });
-
     // Retrieve stored test results
     this._refreshAndNotifyTestResults();
 
@@ -51,26 +46,66 @@ export default class GoService {
     this.pollGoServer();
   }
 
+  currentSettings(profile) {
+    return this.dbService.getSettings(profile).then((doc) => {
+      if (doc && doc.settings) {
+        // saved settings exist, merge them with default settings
+        return Object.assign({}, this.defaultSettings, doc.settings);
+      } else if (profile !== null) {
+        // no saved settings exist for a profile; fall back to settings for default profile
+        return this.currentSettings(null)
+      } else {
+        // no settings exist for default profile; fall back to default settings from the config
+        return this.defaultSettings
+      }
+    });
+  }
+
+  profileForClient(client) {
+    return client.handshake.query.profile
+  }
+
+  pipelinesToFetch(pipelineNames) {
+    return this.dbService.numberOfSettingsWithProfile().then((count) => {
+      if (count > 0) {
+        // we have multiple profiles, don't filter
+        Logger.debug(`Refreshing pipeline status: Multiple profiles present, fetching all pipelines.`)
+        return pipelineNames
+      } else {
+        // no profiles, ignore pipelines disabled in the default profile
+        return this.currentSettings(null).then((settings) => {
+          const pipelinesToIgnore = settings.disabledPipelines;
+          const pipelineFilterRegex = settings.filterRegex;
+
+          const pipelinesToFetch = pipelineNames
+            .filter(p => pipelinesToIgnore.indexOf(p) < 0)
+            .filter(p => p.match(pipelineFilterRegex));
+          Logger.debug(`Refreshing pipeline status: Fetching: ${JSON.stringify(pipelinesToFetch)}; Ignoring: ${JSON.stringify(pipelinesToIgnore)} and everything not matching ${JSON.stringify(pipelineFilterRegex)}`)
+          return pipelinesToFetch
+        });
+      }});
+  };
+
   pollGoServer() {
     // Function that refreshes all pipelines
     const refreshPipelines = (pipelineNames) => {
       let currentPipelines = [];
-      const pipelinesToIgnore = this.currentSettings.disabledPipelines;
-      const pipelinesToFetch = pipelineNames.filter(p => pipelinesToIgnore.indexOf(p) < 0);
-      pipelinesToFetch.forEach((name) => {
-        this.buildService.getPipelineHistory(name).then((pipeline) => {
-          // Add pause information
-          if (this.pipelinesPauseInfo[name] && pipeline) {
-            pipeline.pauseinfo = this.pipelinesPauseInfo[name];
-          }
-          currentPipelines.push(pipeline);
-          if (currentPipelines.length === pipelinesToFetch.length) {
-            this.pipelines = currentPipelines;
-            // Update tests if needed
-            this.updateTestResults(currentPipelines);
-            Logger.debug(`Emitting ${currentPipelines.length} pipelines to ${this.clients.length} clients`);
-            this.notifyAllClients('pipelines:updated', currentPipelines);
-          }
+      this.pipelinesToFetch(pipelineNames).then((pipelinesToFetch) => {
+        pipelinesToFetch.forEach((name) => {
+          this.buildService.getPipelineHistory(name).then((pipeline) => {
+            // Add pause information
+            if (this.pipelinesPauseInfo[name] && pipeline) {
+              pipeline.pauseinfo = this.pipelinesPauseInfo[name];
+            }
+            currentPipelines.push(pipeline);
+            if (currentPipelines.length === pipelinesToFetch.length) {
+              this.pipelines = currentPipelines;
+              // Update tests if needed
+              this.updateTestResults(currentPipelines);
+              Logger.debug(`Emitting ${currentPipelines.length} pipelines to ${this.clients.length} clients`);
+              this.notifyAllClients('pipelines:updated', currentPipelines);
+            }
+          });
         });
       });
     };
@@ -253,9 +288,13 @@ export default class GoService {
     // Add client if not in clients list
     if (!this.clients.some(c => client.id === c.id)) {
 
+      const profile = this.profileForClient(client);
+
       // Emit latest pipeline names and settings
       client.emit('pipelines:names', this.pipelineNames);
-      client.emit('settings:updated', this.currentSettings);
+      this.currentSettings(profile).then((settings) => {
+        client.emit('settings:updated', settings);
+      });
 
       if (conf.groupPipelines) {
         client.emit('pipelineNameToGroupName:updated', this.pipelineNameToGroupName);
@@ -263,10 +302,9 @@ export default class GoService {
 
       // Register for setting updates
       client.on('settings:update', (settings) => {
-        this.dbService.saveOrUpdateSettings(settings).then((savedSettings) => {
-          this.currentSettings = savedSettings;
+        this.dbService.saveOrUpdateSettings(profile, settings).then((savedSettings) => {
           // Notify other clients about the update
-          this.notifyAllClients('settings:updated', savedSettings);
+          this.notifyAllClientsWithProfile(profile, 'settings:updated', savedSettings);
         }, () => {
           Logger.error('Failed to save settings');
         });
@@ -315,6 +353,21 @@ export default class GoService {
    */
   notifyAllClients(event, data) {
     this.clients.forEach((client) => {
+      client.emit(event, data);
+    });
+  }
+
+  /**
+   * Emits an event to all registered clients with a particular profile name
+   *
+   * @param {string}  profile Name of the profile to look for
+   * @param {string}  event   Name of the event
+   * @param {Object}  data    The data to send
+   */
+  notifyAllClientsWithProfile(profile, event, data) {
+    this.clients.filter((client) => {
+      return this.profileForClient(client) === profile
+    }).forEach((client) => {
       client.emit(event, data);
     });
   }

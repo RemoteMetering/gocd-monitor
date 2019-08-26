@@ -1,33 +1,59 @@
-import Datastore from 'nedb';
+
 
 export default class DBService {
 
-  constructor(dbFilePath) {
-    this.datastore = new Datastore({ filename: dbFilePath, autoload: true });
+  constructor(datastore) {
+    this.datastore = datastore
   }
 
   /**
-   * @return {Promise<Object>}  Settings stored in db
+   * @param {string}           profile   Name of the settings profile
+   * @return {Promise<Object>}           Settings stored in db
    */
-  getSettings() {
-    return this._executeDbAction('findOne', { settings: { $exists: true } });
+  getSettings(profile) {
+    let resultPromise
+    if (profile) {
+      resultPromise = this._executeDbAction('findOne',{$and: [{settings: {$exists: true}}, {profile: profile}]});
+    } else {
+      resultPromise = this._executeDbAction('findOne',{$and: [{settings: {$exists: true}}, {profile: {$exists: false}}]});
+    }
+
+    return resultPromise.then((result) => {
+      // Convert settings that were stored when filterRegex was only used for the configuration UI but not for filtering
+      // Can be removed at some point when we expect most users to have upgraded
+      if (result && result.settings) {
+        if (result.settings.filterRegexProps && result.settings.filterRegexProps.active) {
+          result.settings.filterRegex = result.settings.filterRegexProps.value
+        }
+        delete result.settings.filterRegexProps
+      }
+      return result
+    });
   }
 
   /**
+   * @return {Promise<boolean>}           true if the database contains saved settings for a profile
+   */
+  numberOfSettingsWithProfile() {
+    return this._executeDbAction('count', {profile: {$exists: true}});
+  }
+
+  /**
+   * @param {string}          profile    The new settings to save or update
    * @param {Object}          settings   The new settings to save or update
    * @return {Promise<Object>}           The updated settings
    */
-  saveOrUpdateSettings(settings) {
+  saveOrUpdateSettings(profile, settings) {
     const insertSettings = () => {
-      return this._executeDbAction('insert', { settings: settings }).then(() => {
+      return this._executeDbAction('insert', { settings: settings, profile }).then(() => {
           // Since callback of an insert returns the complete document, we resolve with settings argument
           return settings;
       });
     }
-    return this.getSettings().then((doc) => {
+    return this.getSettings(profile).then((doc) => {
       if (doc && doc.settings) {
         return this._executeDbAction('update', { _id: doc._id }, { $set: { settings: settings } }, {}).then(() => {
-          // Since callback of an update returns number of affected documents, we resolve with settings argument 
+          // Since callback of an update returns number of affected documents, we resolve with settings argument
           return settings;
         });
       } else {
@@ -78,7 +104,7 @@ export default class DBService {
 
   /**
    * Executes a database action
-   * 
+   *
    * @param   {string}        action    The action to execute e.g. find, update, remove etc
    * @parma   {Array<Object>} args      Database arguments
    */
