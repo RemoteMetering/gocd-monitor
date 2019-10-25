@@ -19,49 +19,60 @@ const pipelineHistoryUrl = goServerUrl + '/go/tab/pipeline/history/';
 // Weather icon indicator
 const weatherIconStatuses = ['sunny', 'partlycloudy', 'cloudy', 'cloudy', 'pouring', 'lightning'];
 
-const white = '#fff';
-const styles = {
-  cardSuccess: {
-    background: Colors.green.A700,
-    marginBottom: '1rem'
-  },
-  cardFailure: {
-    background: Colors.red.A700,
-    marginBottom: '1rem'
-  },
-  cardActive: {
-    background: Colors.lightBlue.A700,
-    marginBottom: '1rem'
-  },
-  cardInactive: {
-    background: Colors.yellow.A700,
-    marginBottom: '1rem'
-  },
-  cardCancelled: {
-    background: Colors.orange.A700,
-    marginBottom: '1rem'
-  },
-  cardContainer: {
-    position: 'relative',
-    paddingBottom: '0.5rem'
-  },
-  cardTitle: {
-    color: white,
-    fontSize: '1.2em'
-  },
-  cardLabel: {
-    fontWeight: 'normal'
-  },
-  cardSubTitle: {
-    color: white,
-    fontSize: '1em',
-    fontWeight: 100
-  },
-  progress: {
-    color: white,
-    float: 'right'
-  }
-};
+const createStyles = darkTheme => {
+  const fontColor = darkTheme ? '#000': '#fff'
+  return {
+    cardSuccess: {
+      background: Colors.green.A700,
+      marginBottom: '1rem'
+    },
+    cardFailure: {
+      background: Colors.red.A700,
+      marginBottom: '1rem'
+    },
+    cardActive: {
+      background: Colors.lightBlue.A700,
+      marginBottom: '1rem'
+    },
+    cardInactive: {
+      background: Colors.yellow.A700,
+      marginBottom: '1rem'
+    },
+    cardCancelled: {
+      background: Colors.orange.A700,
+      marginBottom: '1rem'
+    },
+    cardContainer: {
+      position: 'relative',
+      paddingBottom: '0.5rem'
+    },
+    cardTitle: {
+      color: fontColor,
+      fontSize: '1.2em'
+    },
+    cardLabel: {
+      fontWeight: 'normal'
+    },
+    cardSubTitle: {
+      color: fontColor,
+      fontSize: '1em',
+      fontWeight: 100
+    },
+    progress: {
+      color: fontColor,
+      float: 'right'
+    },
+    buildInfo: {
+      color: fontColor
+    },
+    weatherIcon: {
+      color: fontColor
+    },
+    loader: {
+      stroke: fontColor
+    }
+  };
+}
 
 export default class Pipeline extends React.Component {
 
@@ -134,8 +145,9 @@ export default class Pipeline extends React.Component {
   }
 
   render() {
-    const { pipeline } = this.props;
+    const { pipeline, darkTheme } = this.props;
     const status = Pipeline.status(pipeline);
+    const styles = createStyles(darkTheme);
 
     const stages = (
       <div className='col-xs-6'>
@@ -154,7 +166,7 @@ export default class Pipeline extends React.Component {
               if (stage.status === 'building') {
                 return (<span key={stage.name} className="loader">
                   <svg className="circular" viewBox="25 25 50 50">
-                    <circle className="path" cx="50" cy="50" r="20" fill="none" strokeWidth="4" strokeMiterlimit="10" />
+                    <circle className="path" cx="50" cy="50" r="20" fill="none" strokeWidth="4" strokeMiterlimit="10" style={styles.loader} />
                   </svg>
                 </span>);
               } else {
@@ -194,13 +206,13 @@ export default class Pipeline extends React.Component {
           {pipeline.name}
         </Typography>
         {!hideWeatherIcons &&
-          <i className={'mdi-weather-' + this.weatherIcon(pipeline) + ' mdi mdi-48px buildstatus'}></i>
+          <i className={'mdi-weather-' + this.weatherIcon(pipeline) + ' mdi mdi-48px buildstatus'} style={styles.weatherIcon}></i>
         }
         <Typography style={styles.cardSubTitle} color="textSecondary">
           {buildStatus}
         </Typography>
 
-        <div className="buildinfo">
+        <div className="buildinfo" style={styles.buildInfo}>
           <div className="col-xs-6">
             <p>
               <i className="mdi mdi-clock-outline mdi-24px"></i>

@@ -12,7 +12,7 @@ var config = {
     // Key for https
     httpsKeyPath: process.env.gocdmonitor_key_path || './server/cert/server.key',
     // Url for your go server
-    goServerUrl: process.env.gocdmonitor_gocd_host || 'https://ci.example.com',
+    goServerUrl: process.env.gocdmonitor_gocd_host || 'http://localhost:8153',
     // Go user to use for communication with go server
     goUser: process.env.gocdmonitor_gocd_user || '',
     // Password for go user
@@ -35,8 +35,6 @@ var config = {
     dbFilePath: process.env.gocdmonitor_db_file_path || 'server/data.db',
 
     // --- Client ---
-    // Enable dark theme
-    enableDarkTheme: process.env.gocdmonitor_enable_dark_theme === "true",
     // Whether to display build labels
     showBuildLabels: process.env.gocdmonitor_gocd_showbuildlabels === "true",
     // Whether to link to pipeline in GoCD on click

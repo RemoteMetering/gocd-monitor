@@ -64,10 +64,6 @@ This can be extremely useful for configuring in Docker environments.
 
 
 Optionally set the following variables in app-config.js.  
-Enable dark theme:
-```
-enableDarkTheme: true
-```
 Group pipelines by their pipeline groups:
 ```
 groupPipelines: true
@@ -93,6 +89,7 @@ Enjoy :)
 ## Configuration
 Go to `http://localhost:3000?admin` and click the settings button in the bottom-right corner to open the configuration dialog.
 * Sort Order - Sort pipelines by status or latest build time
+* Dark Theme - Enables dark theme
 * Filter Pipelines - Disable/enable pipelines to retrieve from go server. It's also possible to write a regex with the pipelines you want.
 ![Configuration](https://github.com/karmats/gocd-monitor/blob/gh-pages/images/configuration.png?raw=true)
 
@@ -108,7 +105,11 @@ To configure test reports, go to `http://localhost:3000/test-results?admin`. Cli
 The server polls the go server every `goPollingInterval` seconds. The results are then reported to the client using [socket.io](http://socket.io/). The pipelines and its pause info are refreshed once every day.
 
 ## Development
-To run the application in development mode, open a terminal and enter `npm run dev-start`. The server and client will be rebuilt when a js or jsx-file changes.
+
+[gocd-trial-launcher](https://www.gocd.org/test-drive-gocd.html) can be used to setup GoCD locally with sample piplines. Download and extract the appropriate archive for your development environment. Enter `./run-gocd` to start the setup.
+
+To run the application in development mode, open a terminal and enter `npm run dev-start`. The server and client will be rebuilt when a js or jsx-file changes. By default, it points to the GoCD server started by gocd-trial-launcher ([refer](https://github.com/karmats/gocd-monitor/blob/1aad6e45c3f5454f0e4f2857f64a1055a13ea459/app-config.js#L15)).
+
 To run tests, enter `npm test`.
 
 ## Troubleshooting
